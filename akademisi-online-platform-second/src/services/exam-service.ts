@@ -191,15 +191,27 @@ const transformExamResult = (rawResult: RawExamResult): ExamResult => {
     examId = rawResult.examId._id;
   }
 
+  // Transform answers and calculate score
+  const transformedAnswers = Array.isArray(rawResult.answers) ? rawResult.answers.map(answer => ({
+    questionId: answer.questionId,
+    selectedAnswer: "ABCD".indexOf(answer.selectedAnswer),
+  })) : [];
+
+  // Calculate score based on correct answers
+  const totalQuestions = transformedAnswers.length;
+  const correctAnswers = transformedAnswers.filter((answer, index) => {
+    const originalAnswer = rawResult.answers[index];
+    return originalAnswer.isCorrect;
+  }).length;
+
+  const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
   return {
     id: rawResult._id || rawResult.id || '',
     examId,
     studentId: rawResult.studentId,
-    score: rawResult.score || 0,
-    answers: Array.isArray(rawResult.answers) ? rawResult.answers.map(answer => ({
-      questionId: answer.questionId,
-      selectedAnswer: "ABCD".indexOf(answer.selectedAnswer),
-    })) : [],
+    score,
+    answers: transformedAnswers,
     submittedAt: rawResult.submittedAt
   };
 };

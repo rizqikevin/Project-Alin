@@ -107,6 +107,17 @@ export default function StudentResults() {
       : "bg-red-100 text-red-800";
   };
 
+  // Fungsi untuk menghitung skor berdasarkan jawaban dan kunci jawaban
+  const calculateScore = () => {
+    if (!selectedResult || !selectedExam) return 0;
+    const total = selectedResult.answers.length;
+    const correct = selectedResult.answers.filter((a) => {
+      const q = selectedExam.questions.find(q => q.id === a.questionId);
+      return q && q.correctAnswer === a.selectedAnswer;
+    }).length;
+    return total > 0 ? Math.round((correct / total) * 100) : 0;
+  };
+
   return (
     <DashboardLayout requiredRole={UserRole.STUDENT}>
       <div className="space-y-6">
@@ -148,8 +159,26 @@ export default function StudentResults() {
                             {formatDate(result.submittedAt)}
                           </p>
                         </div>
-                        <Badge className={getScoreColor(result.score)}>
-                          {result.score}
+                        <Badge className={getScoreColor(
+                          (() => {
+                            if (!selectedExam) return 0;
+                            const total = result.answers.length;
+                            const correct = result.answers.filter((a) => {
+                              const q = selectedExam.questions.find(q => q.id === a.questionId);
+                              return q && q.correctAnswer === a.selectedAnswer;
+                            }).length;
+                            return total > 0 ? Math.round((correct / total) * 100) : 0;
+                          })()
+                        )}>
+                          {(() => {
+                            if (!selectedExam) return 0;
+                            const total = result.answers.length;
+                            const correct = result.answers.filter((a) => {
+                              const q = selectedExam.questions.find(q => q.id === a.questionId);
+                              return q && q.correctAnswer === a.selectedAnswer;
+                            }).length;
+                            return total > 0 ? Math.round((correct / total) * 100) : 0;
+                          })()}
                         </Badge>
                       </div>
                     </div>
@@ -172,8 +201,8 @@ export default function StudentResults() {
                         {formatDate(selectedResult.submittedAt)}
                       </p>
                     </div>
-                    <Badge className={getScoreColor(selectedResult.score)}>
-                      Nilai: {selectedResult.score}
+                    <Badge className={getScoreColor(calculateScore())}>
+                      Nilai: {calculateScore()}
                     </Badge>
                   </div>
 
