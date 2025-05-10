@@ -43,7 +43,7 @@ export interface RawExam {
   startTime: string;
   durationMinutes: number;
   questions: RawQuestion[];
-  teacherId: string;
+  teacherId: string | { _id: string } | null;
   createdAt?: string;
   updatedAt?: string;
 }

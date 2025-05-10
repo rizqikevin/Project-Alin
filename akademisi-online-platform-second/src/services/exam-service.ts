@@ -1,6 +1,7 @@
 import api from './api';
 import { toast } from 'sonner';
 import { AxiosError } from 'axios';
+import { ExamResult, RawExamResult, Exam, RawExam, ExamSubmission } from '@/types';
 
 // Types
 interface RawQuestion {
@@ -47,35 +48,6 @@ interface Exam {
   teacherId: string;
   createdAt?: string;
   updatedAt?: string;
-}
-
-interface ExamResult {
-  id: string;
-  examId: string;
-  studentId: string;
-  score: number;
-  answers: {
-    questionId: string;
-    selectedAnswer: string;
-    isCorrect: boolean;
-  }[];
-  startedAt: string;
-  submittedAt: string;
-}
-
-interface RawExamResult {
-  _id?: string;
-  id?: string;
-  examId: string;
-  studentId: string;
-  score: number;
-  answers: {
-    questionId: string;
-    selectedAnswer: string;
-    isCorrect: boolean;
-  }[];
-  startedAt: string;
-  submittedAt: string;
 }
 
 interface ExamSubmission {
