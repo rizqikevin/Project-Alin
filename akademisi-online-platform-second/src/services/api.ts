@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import { toast } from 'sonner';
 
 // Use relative URL in development to work with Vite proxy
-const API_URL = import.meta.env.DEV ? '/api' : 'http://localhost:5000/api';
+const API_URL = import.meta.env.DEV ? '/api' : 'https://api.rizqikevin.my.id/api';
 console.log('API URL:', API_URL);
 
 // Define error response type

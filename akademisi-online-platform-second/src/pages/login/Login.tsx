@@ -3,9 +3,29 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { UserRole } from "@/types";
-import { login } from "@/services/auth-service";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+
+// Form validation schema
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Email harus diisi")
+    .email("Format email tidak valid"),
+  password: z
+    .string()
+    .min(1, "Password harus diisi")
+    .min(6, "Password minimal 6 karakter"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 interface ErrorResponse {
   message: string;
@@ -14,73 +34,59 @@ interface ErrorResponse {
 }
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-  
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setIsSubmitting(true);
+
     try {
-      // Validate input
-      if (!email || !password) {
-        toast.error("Email dan password harus diisi");
-        return;
-      }
-  
-      console.log("Submitting login form:", {
-        email: email.trim(),
-        hasPassword: !!password,
-      });
-  
-      const response = await login({
-        email: email.trim(),
-        password,
-      });
-  
-      console.log("User role:", response.user.role);
-      console.log("Enum TEACHER:", UserRole.TEACHER);
-      const role = response.user.role;
-  
-      if (response.user) {
+      const success = await authLogin(data.email.trim(), data.password);
+      
+      if (success) {
         toast.success("Login berhasil");
-        console.log("User after login:", response.user);
-  
-        // Set timeout before navigating
+        
+        // Navigate based on role
         setTimeout(() => {
-          if (role === UserRole.TEACHER) {
+          const user = JSON.parse(localStorage.getItem('user_data') || '{}');
+          if (user.role === UserRole.TEACHER) {
             navigate("/dashboard/guru", { replace: true });
-            window.location.reload();
-            console.log("Navigating based on role:", role);
-          } else if (role === UserRole.STUDENT) {
+          } else if (user.role === UserRole.STUDENT) {
             navigate("/dashboard/siswa", { replace: true });
-            console.log("Navigating based on role:", role);
-            window.location.reload();
           } else {
             toast.error("Role tidak dikenali");
           }
-        }, 2000); // Set timeout 2 detik (2000 ms)
+        }, 1000);
       }
     } catch (error) {
       console.error("Login error:", error);
-      if (error instanceof Error) {
-        if (error instanceof AxiosError) {
-          const axiosError = error as AxiosError<ErrorResponse>;
-          toast.error(
-            axiosError.response?.data?.message || "Email atau password salah"
-          );
-        } else {
-          toast.error(error.message || "Email atau password salah");
-        }
+      
+      if (error instanceof AxiosError) {
+        const axiosError = error as AxiosError<ErrorResponse>;
+        const errorMessage = axiosError.response?.data?.message || "Email atau password salah";
+        toast.error(errorMessage);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
       } else {
-        toast.error("Email atau password salah");
+        toast.error("Terjadi kesalahan saat login");
       }
     } finally {
-      setIsLoading(false); // Ensure loading state is reset after error or success
+      setIsSubmitting(false);
     }
-  };  
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-akademisi-light-purple/30 to-white p-4">
@@ -94,39 +100,48 @@ export default function Login() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="form-label">
-              Email
-            </label>
-            <input
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="form-input"
               placeholder="contoh@email.com"
-              required
+              {...register("email")}
+              aria-invalid={errors.email ? "true" : "false"}
             />
+            {errors.email && (
+              <p className="text-sm text-red-500">{errors.email.message}</p>
+            )}
           </div>
 
-          <div>
-            <label htmlFor="password" className="form-label">
-              Password
-            </label>
-            <input
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
               id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="form-input"
               placeholder="Password"
-              required
+              {...register("password")}
+              aria-invalid={errors.password ? "true" : "false"}
             />
+            {errors.password && (
+              <p className="text-sm text-red-500">{errors.password.message}</p>
+            )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Memproses..." : "Masuk"}
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Memproses...
+              </>
+            ) : (
+              "Masuk"
+            )}
           </Button>
         </form>
 
@@ -143,23 +158,27 @@ export default function Login() {
         </div>
 
         <div className="mt-6 pt-6 border-t border-gray-200">
-          <p className="text-center text-xs text-gray-500">Demo Akun:</p>
-          <div className="mt-2 grid grid-cols-2 gap-4 text-xs">
-            <div className="rounded-md bg-gray-50 p-2">
-              <p>
-                <strong>Guru:</strong>
-              </p>
-              <p>Email: guru@example.com</p>
-              <p>Password: password123</p>
+          <details className="text-center">
+            <summary className="text-xs text-gray-500 cursor-pointer">
+              Lihat Demo Akun
+            </summary>
+            <div className="mt-2 grid grid-cols-2 gap-4 text-xs">
+              <div className="rounded-md bg-gray-50 p-2">
+                <p>
+                  <strong>Guru:</strong>
+                </p>
+                <p>Email: guru@example.com</p>
+                <p>Password: password123</p>
+              </div>
+              <div className="rounded-md bg-gray-50 p-2">
+                <p>
+                  <strong>Siswa:</strong>
+                </p>
+                <p>Email: siswa@example.com</p>
+                <p>Password: password123</p>
+              </div>
             </div>
-            <div className="rounded-md bg-gray-50 p-2">
-              <p>
-                <strong>Siswa:</strong>
-              </p>
-              <p>Email: siswa@example.com</p>
-              <p>Password: password123</p>
-            </div>
-          </div>
+          </details>
         </div>
       </Card>
     </div>
