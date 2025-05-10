@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { UserRole, Exam, ExamResult, User } from "@/types";
-import { getExamsByTeacher, getExamResults } from "@/services/exam-service";
+import { getExamsByTeacher, getExamResults, getExamById } from "@/services/exam-service";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ export default function ExamResults() {
   const [results, setResults] = useState<ExamResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isResultsLoading, setIsResultsLoading] = useState(false);
+  const [examDetail, setExamDetail] = useState<Exam | null>(null);
 
   const fetchExamResults = useCallback(async (examId: string) => {
     if (!examId) {
@@ -24,15 +25,7 @@ export default function ExamResults() {
     setIsResultsLoading(true);
     try {
       const fetchedResults = await getExamResults(examId);
-      // Convert string answers to numbers
-      const convertedResults: ExamResult[] = fetchedResults.map(result => ({
-        ...result,
-        answers: result.answers.map(answer => ({
-          ...answer,
-          selectedAnswer: parseInt(answer.selectedAnswer)
-        }))
-      }));
-      setResults(convertedResults);
+      setResults(fetchedResults);
     } catch (error) {
       console.error("Error fetching exam results:", error);
       setResults([]);
@@ -54,14 +47,18 @@ export default function ExamResults() {
         const firstExamId = fetchedExams[0].id;
         setSelectedExamId(firstExamId);
         await fetchExamResults(firstExamId);
+        const detail = await getExamById(firstExamId);
+        setExamDetail(detail);
       } else {
         setSelectedExamId(null);
         setResults([]);
+        setExamDetail(null);
       }
     } catch (error) {
       console.error("Error fetching exams:", error);
       setSelectedExamId(null);
       setResults([]);
+      setExamDetail(null);
     } finally {
       setIsLoading(false);
     }
@@ -77,11 +74,13 @@ export default function ExamResults() {
     if (!examId) {
       setSelectedExamId(null);
       setResults([]);
+      setExamDetail(null);
       return;
     }
-    
     setSelectedExamId(examId);
     await fetchExamResults(examId);
+    const detail = await getExamById(examId);
+    setExamDetail(detail);
   };
 
   // Format date function
@@ -176,8 +175,13 @@ export default function ExamResults() {
                       </div>
                     ) : (
                       results.map((result, index) => {
-                        const totalQuestions = result.answers.length;
-                        const correctAnswers = result.answers.filter(a => a.isCorrect).length;
+                        // Hitung jumlah benar dan nilai berdasarkan kunci jawaban
+                        const correctAnswers = result.answers.filter(a => {
+                          const q = examDetail?.questions.find(q => q.id === a.questionId);
+                          return q && q.correctAnswer === a.selectedAnswer;
+                        }).length;
+                        const totalQuestions = examDetail?.questions.length || 0;
+                        const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
                         const users = JSON.parse(localStorage.getItem("akademisi-users") || "[]") as User[];
                         const student = users.find(u => u.id === result.studentId);
                         
@@ -195,13 +199,13 @@ export default function ExamResults() {
                             </div>
                             <div className="col-span-12 md:col-span-2 text-center">
                               <Badge 
-                                className={`${
-                                  result.score >= 80 ? 'bg-green-500' : 
-                                  result.score >= 60 ? 'bg-yellow-500' : 
+                                className={`$${
+                                  score >= 80 ? 'bg-green-500' : 
+                                  score >= 60 ? 'bg-yellow-500' : 
                                   'bg-red-500'
                                 }`}
                               >
-                                {result.score}
+                                {score}
                               </Badge>
                             </div>
                             <div className="hidden md:block md:col-span-2 text-center text-sm">
