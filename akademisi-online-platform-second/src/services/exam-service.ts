@@ -1,7 +1,13 @@
-import api from './api';
-import { toast } from 'sonner';
-import { AxiosError } from 'axios';
-import { ExamResult, RawExamResult, Exam, RawExam, ExamSubmission } from '@/types';
+import api from "./api";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
+import {
+  ExamResult,
+  RawExamResult,
+  Exam,
+  RawExam,
+  ExamSubmission,
+} from "@/types";
 
 // Types
 interface RawQuestion {
@@ -31,8 +37,8 @@ interface RawExam {
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
-  }
-  
+}
+
 interface Exam {
   id: string;
   title: string;
@@ -61,28 +67,28 @@ interface ExamSubmission {
 // Validate exam data
 const validateExam = (exam: RawExam): boolean => {
   if (!exam) {
-    console.error('Exam is null or undefined');
+    console.error("Exam is null or undefined");
     return false;
   }
 
   // Validate required fields
   if (!exam._id) {
-    console.error('Missing exam ID');
+    console.error("Missing exam ID");
     return false;
   }
 
   if (!exam.title) {
-    console.error('Missing exam title');
+    console.error("Missing exam title");
     return false;
   }
 
   if (!exam.startTime) {
-    console.error('Missing start time');
+    console.error("Missing start time");
     return false;
   }
 
-  if (typeof exam.durationMinutes !== 'number' || exam.durationMinutes <= 0) {
-    console.error('Invalid duration:', exam.durationMinutes);
+  if (typeof exam.durationMinutes !== "number" || exam.durationMinutes <= 0) {
+    console.error("Invalid duration:", exam.durationMinutes);
     return false;
   }
 
@@ -93,25 +99,26 @@ const validateExam = (exam: RawExam): boolean => {
 
       // Validate question text
       if (!question.question) {
-        console.error('Missing question text:', question);
+        console.error("Missing question text:", question);
         return false;
       }
 
       // Check if question has either options array or individual options
       if (Array.isArray(question.options)) {
         if (question.options.length < 4) {
-          console.error('Question must have at least 4 options:', question);
+          console.error("Question must have at least 4 options:", question);
           return false;
         }
       } else {
         // Check individual options
-        const requiredOptions = ['optionA', 'optionB', 'optionC', 'optionD'];
-        const hasAllOptions = requiredOptions.every(option => 
-          question[option] !== undefined && question[option] !== null
+        const requiredOptions = ["optionA", "optionB", "optionC", "optionD"];
+        const hasAllOptions = requiredOptions.every(
+          (option) =>
+            question[option] !== undefined && question[option] !== null
         );
-        
+
         if (!hasAllOptions) {
-          console.error('Question missing required options:', question);
+          console.error("Question missing required options:", question);
           return false;
         }
       }
@@ -124,78 +131,92 @@ const validateExam = (exam: RawExam): boolean => {
 // Transform raw exam data to Exam type
 const transformExam = (rawExam: RawExam): Exam => {
   // Handle teacherId which could be string, object, or null
-  let teacherId = '';
+  let teacherId = "";
   const teacherIdData = rawExam.teacherId;
-  
+
   if (teacherIdData) {
-    if (typeof teacherIdData === 'object' && teacherIdData !== null && '_id' in teacherIdData) {
+    if (
+      typeof teacherIdData === "object" &&
+      teacherIdData !== null &&
+      "_id" in teacherIdData
+    ) {
       teacherId = teacherIdData._id;
-    } else if (typeof teacherIdData === 'string') {
+    } else if (typeof teacherIdData === "string") {
       teacherId = teacherIdData;
     }
   }
 
   // Transform questions
-  const transformedQuestions = Array.isArray(rawExam.questions) ? rawExam.questions.map(q => {
-    // Handle both array and individual options format
-    let options: string[] = [];
-    
-    if (Array.isArray(q.options)) {
-      options = q.options;
-    } else {
-      options = [
-        q.optionA || '',
-        q.optionB || '',
-        q.optionC || '',
-        q.optionD || ''
-      ];
-    }
+  const transformedQuestions = Array.isArray(rawExam.questions)
+    ? rawExam.questions.map((q) => {
+        // Handle both array and individual options format
+        let options: string[] = [];
 
-    // Convert correctAnswer from string (A,B,C,D) to number (0,1,2,3)
-    let correctAnswer = 0;
-    if (q.correctAnswer) {
-      const index = 'ABCD'.indexOf(q.correctAnswer.toUpperCase());
-      if (index !== -1) {
-        correctAnswer = index;
-      }
-    }
+        if (Array.isArray(q.options)) {
+          options = q.options;
+        } else {
+          options = [
+            q.optionA || "",
+            q.optionB || "",
+            q.optionC || "",
+            q.optionD || "",
+          ];
+        }
 
-    return {
-      id: q._id || q.id || '',
-      question: q.question || '',
-      options,
-      correctAnswer
-    };
-  }) : [];
+        let correctAnswer = 0;
+
+        if (typeof q.correctAnswer === "string") {
+          const index = "ABCD".indexOf(q.correctAnswer.toUpperCase());
+          if (index !== -1) {
+            correctAnswer = index;
+          }
+        } else if (typeof q.correctAnswer === "number") {
+          correctAnswer = q.correctAnswer;
+        }
+
+        return {
+          id: q._id || q.id || "",
+          question: q.question || "",
+          options,
+          correctAnswer,
+        };
+      })
+    : [];
 
   return {
     id: rawExam._id,
     title: rawExam.title,
-    description: rawExam.description || '',
+    description: rawExam.description || "",
     startTime: rawExam.startTime,
     durationMinutes: rawExam.durationMinutes,
     questions: transformedQuestions,
     teacherId,
     createdAt: rawExam.createdAt,
-    updatedAt: rawExam.updatedAt
+    updatedAt: rawExam.updatedAt,
   };
 };
 
 // Transform raw exam result data to ExamResult type
 const transformExamResult = (rawResult: RawExamResult): ExamResult => {
   // Handle examId which could be string or RawExam object
-  let examId = '';
-  if (typeof rawResult.examId === 'string') {
+  let examId = "";
+  if (typeof rawResult.examId === "string") {
     examId = rawResult.examId;
-  } else if (rawResult.examId && typeof rawResult.examId === 'object' && '_id' in rawResult.examId) {
+  } else if (
+    rawResult.examId &&
+    typeof rawResult.examId === "object" &&
+    "_id" in rawResult.examId
+  ) {
     examId = rawResult.examId._id;
   }
 
   // Transform answers and calculate score
-  const transformedAnswers = Array.isArray(rawResult.answers) ? rawResult.answers.map(answer => ({
-    questionId: answer.questionId,
-    selectedAnswer: "ABCD".indexOf(answer.selectedAnswer),
-  })) : [];
+  const transformedAnswers = Array.isArray(rawResult.answers)
+    ? rawResult.answers.map((answer) => ({
+        questionId: answer.questionId,
+        selectedAnswer: "ABCD".indexOf(answer.selectedAnswer),
+      }))
+    : [];
 
   // Calculate score based on correct answers
   const totalQuestions = transformedAnswers.length;
@@ -204,15 +225,18 @@ const transformExamResult = (rawResult: RawExamResult): ExamResult => {
     return originalAnswer.isCorrect;
   }).length;
 
-  const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+  const score =
+    totalQuestions > 0
+      ? Math.round((correctAnswers / totalQuestions) * 100)
+      : 0;
 
   return {
-    id: rawResult._id || rawResult.id || '',
+    id: rawResult._id || rawResult.id || "",
     examId,
     studentId: rawResult.studentId,
     score,
     answers: transformedAnswers,
-    submittedAt: rawResult.submittedAt
+    submittedAt: rawResult.submittedAt,
   };
 };
 
@@ -220,13 +244,15 @@ const transformExamResult = (rawResult: RawExamResult): ExamResult => {
 export const getExamsByTeacher = async (teacherId: string): Promise<Exam[]> => {
   try {
     const { data } = await api.get<RawExam[]>(`/exams/teacher/${teacherId}`);
-    console.log('Teacher exams received:', data);
-    
-    return data.map(exam => transformExam(exam));
+    console.log("Teacher exams received:", data);
+
+    return data.map((exam) => transformExam(exam));
   } catch (error) {
-    console.error('Error fetching teacher exams:', error);
+    console.error("Error fetching teacher exams:", error);
     if (error instanceof AxiosError) {
-      toast.error(error.response?.data?.message || "Gagal mengambil data ujian");
+      toast.error(
+        error.response?.data?.message || "Gagal mengambil data ujian"
+      );
     } else {
       toast.error("Terjadi kesalahan saat mengambil data ujian");
     }
@@ -238,18 +264,20 @@ export const getExamsByTeacher = async (teacherId: string): Promise<Exam[]> => {
 export const getExamById = async (examId: string): Promise<Exam | null> => {
   try {
     const { data } = await api.get<RawExam>(`/exams/${examId}`);
-    console.log('Exam received:', data);
-    
+    console.log("Exam received:", data);
+
     if (!validateExam(data)) {
-      console.error('Invalid exam data received:', data);
+      console.error("Invalid exam data received:", data);
       return null;
     }
-    
+
     return transformExam(data);
   } catch (error) {
-    console.error('Error fetching exam:', error);
+    console.error("Error fetching exam:", error);
     if (error instanceof AxiosError) {
-      toast.error(error.response?.data?.message || "Gagal mengambil data ujian");
+      toast.error(
+        error.response?.data?.message || "Gagal mengambil data ujian"
+      );
     } else {
       toast.error("Terjadi kesalahan saat mengambil data ujian");
     }
@@ -260,14 +288,16 @@ export const getExamById = async (examId: string): Promise<Exam | null> => {
 // Get active exams
 export const getActiveExams = async (): Promise<Exam[]> => {
   try {
-    const { data } = await api.get<RawExam[]>('/exams/active');
-    console.log('Active exams received:', data);
-    
-    return data.map(exam => transformExam(exam));
+    const { data } = await api.get<RawExam[]>("/exams/active");
+    console.log("Active exams received:", data);
+
+    return data.map((exam) => transformExam(exam));
   } catch (error) {
-    console.error('Error fetching active exams:', error);
+    console.error("Error fetching active exams:", error);
     if (error instanceof AxiosError) {
-      toast.error(error.response?.data?.message || "Gagal mengambil data ujian aktif");
+      toast.error(
+        error.response?.data?.message || "Gagal mengambil data ujian aktif"
+      );
     } else {
       toast.error("Terjadi kesalahan saat mengambil data ujian aktif");
     }
@@ -276,28 +306,32 @@ export const getActiveExams = async (): Promise<Exam[]> => {
 };
 
 // Get exam results for a specific student
-export const getStudentResults = async (studentId: string): Promise<ExamResult[]> => {
+export const getStudentResults = async (
+  studentId: string
+): Promise<ExamResult[]> => {
   if (!studentId) {
-    console.error('Invalid student ID');
+    console.error("Invalid student ID");
     return [];
   }
 
   try {
-    console.log('Fetching results for student:', studentId);
-    const { data } = await api.get<RawExamResult[]>(`/results/student/${studentId}`);
-    console.log('Student results received:', data);
+    console.log("Fetching results for student:", studentId);
+    const { data } = await api.get<RawExamResult[]>(
+      `/results/student/${studentId}`
+    );
+    console.log("Student results received:", data);
 
     if (!Array.isArray(data)) {
-      console.error('Invalid results format:', data);
+      console.error("Invalid results format:", data);
       return [];
     }
 
-    return data.map(result => transformExamResult(result));
+    return data.map((result) => transformExamResult(result));
   } catch (error) {
-    console.error('Error fetching student results:', error);
+    console.error("Error fetching student results:", error);
     if (error instanceof AxiosError) {
-      console.error('Response data:', error.response?.data);
-      console.error('Response status:', error.response?.status);
+      console.error("Response data:", error.response?.data);
+      console.error("Response status:", error.response?.status);
     }
     toast.error("Gagal mengambil hasil ujian siswa");
     return [];
@@ -307,26 +341,26 @@ export const getStudentResults = async (studentId: string): Promise<ExamResult[]
 // Get all results for a specific exam
 export const getExamResults = async (examId: string): Promise<ExamResult[]> => {
   if (!examId) {
-    console.error('Invalid exam ID:', examId);
+    console.error("Invalid exam ID:", examId);
     return [];
   }
-  
+
   try {
-    console.log('Fetching results for exam:', examId);
+    console.log("Fetching results for exam:", examId);
     const { data } = await api.get<RawExamResult[]>(`/results/exam/${examId}`);
-    console.log('Exam results received:', data);
+    console.log("Exam results received:", data);
 
     if (!Array.isArray(data)) {
-      console.error('Invalid results format:', data);
+      console.error("Invalid results format:", data);
       return [];
     }
 
-    return data.map(result => transformExamResult(result));
+    return data.map((result) => transformExamResult(result));
   } catch (error) {
-    console.error('Error fetching exam results:', error);
+    console.error("Error fetching exam results:", error);
     if (error instanceof AxiosError) {
-      console.error('Response data:', error.response?.data);
-      console.error('Response status:', error.response?.status);
+      console.error("Response data:", error.response?.data);
+      console.error("Response status:", error.response?.status);
     }
     toast.error("Gagal mengambil hasil ujian");
     return [];
@@ -339,29 +373,32 @@ export const submitExam = async (
   submission: ExamSubmission
 ): Promise<ExamResult | null> => {
   if (!submission.examId) {
-    console.error('Invalid exam ID');
+    console.error("Invalid exam ID");
     return null;
   }
-    
+
   try {
-    console.log('Submitting exam answers:', {
+    console.log("Submitting exam answers:", {
       studentId,
       examId: submission.examId,
-      answers: submission.answers
-    });
-    
-    const { data } = await api.post<RawExamResult>(`/results/${submission.examId}/submit`, {
-      studentId,
       answers: submission.answers,
     });
 
-    console.log('Exam submission response:', data);
+    const { data } = await api.post<RawExamResult>(
+      `/results/${submission.examId}/submit`,
+      {
+        studentId,
+        answers: submission.answers,
+      }
+    );
+
+    console.log("Exam submission response:", data);
     return transformExamResult(data);
   } catch (error) {
-    console.error('Error submitting exam:', error);
+    console.error("Error submitting exam:", error);
     if (error instanceof AxiosError) {
-      console.error('Response data:', error.response?.data);
-      console.error('Response status:', error.response?.status);
+      console.error("Response data:", error.response?.data);
+      console.error("Response status:", error.response?.status);
     }
     toast.error("Gagal mengirim jawaban ujian");
     return null;
@@ -378,65 +415,48 @@ export const createExam = async (
   teacherId: string
 ): Promise<Exam | null> => {
   // Validate input
-  if (!title || typeof title !== 'string') {
+  if (!title || typeof title !== "string") {
     toast.error("Judul ujian tidak valid");
     return null;
   }
 
-  if (!startTime || typeof startTime !== 'string') {
+  if (!startTime || typeof startTime !== "string") {
     toast.error("Waktu mulai tidak valid");
     return null;
   }
 
-  if (typeof durationMinutes !== 'number' || durationMinutes <= 0) {
+  if (typeof durationMinutes !== "number" || durationMinutes <= 0) {
     toast.error("Durasi ujian tidak valid");
     return null;
   }
 
   if (!Array.isArray(questions) || questions.length === 0) {
-    toast.error("Pertanyaan tidak valid");
+    toast.error("Pertanyaan tidak boleh kosong");
     return null;
   }
 
-  if (!teacherId || typeof teacherId !== 'string') {
-    toast.error("ID guru tidak valid");
+  if (!teacherId) {
+    toast.error("ID guru tidak tersedia");
     return null;
   }
 
   try {
-    console.log('Creating exam with data:', {
+    const { data } = await api.post<RawExam>("/exams", {
       title,
       description,
       startTime,
       durationMinutes,
       questions,
-      teacherId
+      teacherId,
     });
 
-    const { data } = await api.post<RawExam>('/exams', {
-      title,
-      description,
-      startTime,
-      durationMinutes,
-      questions,
-      teacherId
-    });
-
-    if (!validateExam(data)) {
-      console.error('Invalid exam data received:', data);
-      toast.error("Data ujian yang diterima tidak valid");
-      return null;
-    }
-
-    console.log('Exam created successfully:', data);
+    toast.success("Ujian berhasil dibuat");
     return transformExam(data);
   } catch (error) {
-    console.error('Error creating exam:', error);
+    console.error("Error creating exam:", error);
     if (error instanceof AxiosError) {
-      const errorMessage = error.response?.data?.message || "Gagal membuat ujian";
-      console.error('Response data:', error.response?.data);
-      console.error('Response status:', error.response?.status);
-      toast.error(errorMessage);
+      console.error("Response data:", error.response?.data);
+      toast.error(error.response?.data?.message || "Gagal membuat ujian");
     } else {
       toast.error("Terjadi kesalahan saat membuat ujian");
     }
