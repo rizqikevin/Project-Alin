@@ -1,13 +1,7 @@
 import api from "./api";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
-import {
-  ExamResult,
-  RawExamResult,
-  Exam,
-  RawExam,
-  ExamSubmission,
-} from "@/types";
+import { ExamResult, RawExamResult } from "@/types";
 
 // Types
 interface RawQuestion {

@@ -85,7 +85,7 @@ export interface RawExamResult {
 export interface ExamResult {
   id: string;
   examId: string;
-  studentId: string;
+  studentId: { id: string; name: string; email: string };
   answers: {
     questionId: string;
     selectedAnswer: number;

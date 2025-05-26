@@ -1,7 +1,13 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types";
-import { Book, LogOut, User, PlusCircle, ListChecks, CheckSquare } from "lucide-react";
+import {
+  Book,
+  LogOut,
+  User,
+  PlusCircle,
+  ListChecks,
+  CheckSquare,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -14,7 +20,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 export function AppSidebar() {
@@ -85,7 +90,10 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton asChild onClick={() => navigate(item.path)}>
+                  <SidebarMenuButton
+                    asChild
+                    onClick={() => navigate(item.path)}
+                  >
                     <button className="flex w-full items-center">
                       <item.icon className="mr-2 h-4 w-4" />
                       <span>{item.title}</span>
@@ -103,7 +111,9 @@ export function AppSidebar() {
           <User className="mr-2 h-4 w-4" />
           <div className="text-sm flex flex-col">
             <span className="font-medium">{user.name}</span>
-            <span className="text-xs text-muted-foreground">{user.role === UserRole.TEACHER ? "Guru" : "Siswa"}</span>
+            <span className="text-xs text-muted-foreground">
+              {user.role === UserRole.TEACHER ? "Guru" : "Siswa"}
+            </span>
           </div>
           <button
             className="ml-auto rounded-full p-2 text-muted-foreground hover:bg-muted"

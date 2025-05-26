@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { UserRole, Exam, ExamResult, User } from "@/types";
-import { getExamsByTeacher, getExamResults, getExamById } from "@/services/exam-service";
+import {
+  getExamsByTeacher,
+  getExamResults,
+  getExamById,
+} from "@/services/exam-service";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +25,7 @@ export default function ExamResults() {
       setResults([]);
       return;
     }
-    
+
     setIsResultsLoading(true);
     try {
       const fetchedResults = await getExamResults(examId);
@@ -36,12 +40,12 @@ export default function ExamResults() {
 
   const fetchExams = useCallback(async () => {
     if (!user) return;
-    
+
     setIsLoading(true);
     try {
       const fetchedExams = await getExamsByTeacher(user.id);
       setExams(fetchedExams);
-      
+
       // Only set selected exam and fetch results if we have exams
       if (fetchedExams.length > 0) {
         const firstExamId = fetchedExams[0].id;
@@ -132,10 +136,7 @@ export default function ExamResults() {
         <h1 className="text-2xl font-bold">Hasil Ujian</h1>
 
         <div>
-          <Tabs 
-            value={selectedExamId} 
-            onValueChange={handleExamChange}
-          >
+          <Tabs value={selectedExamId} onValueChange={handleExamChange}>
             <TabsList className="mb-4 flex flex-nowrap overflow-x-auto">
               {exams.map((exam) => (
                 <TabsTrigger key={exam.id} value={exam.id} className="text-sm">
@@ -151,18 +152,38 @@ export default function ExamResults() {
                     <div>
                       <h2 className="text-xl font-bold">{exam.title}</h2>
                       <p className="text-sm text-muted-foreground">
-                        Waktu: {formatDate(exam.startTime)} • Durasi: {exam.durationMinutes} menit
+                        Waktu: {formatDate(exam.startTime)} • Durasi:{" "}
+                        {exam.durationMinutes} menit
                       </p>
                     </div>
                   </div>
 
                   <div className="border rounded-md">
                     <div className="grid grid-cols-12 gap-4 p-3 font-medium bg-muted/50">
-                      <div key="number" className="col-span-1">#</div>
-                      <div key="name" className="col-span-6 md:col-span-4">Nama Siswa</div>
-                      <div key="answers" className="col-span-5 md:col-span-3 text-center">Jawaban Benar</div>
-                      <div key="score" className="col-span-12 md:col-span-2 text-center">Nilai</div>
-                      <div key="time" className="hidden md:block md:col-span-2 text-center">Waktu Submit</div>
+                      <div key="number" className="col-span-1">
+                        #
+                      </div>
+                      <div key="name" className="col-span-6 md:col-span-4">
+                        Nama Siswa
+                      </div>
+                      <div
+                        key="answers"
+                        className="col-span-5 md:col-span-3 text-center"
+                      >
+                        Jawaban Benar
+                      </div>
+                      <div
+                        key="score"
+                        className="col-span-12 md:col-span-2 text-center"
+                      >
+                        Nilai
+                      </div>
+                      <div
+                        key="time"
+                        className="hidden md:block md:col-span-2 text-center"
+                      >
+                        Waktu Submit
+                      </div>
                     </div>
 
                     {isResultsLoading ? (
@@ -176,15 +197,25 @@ export default function ExamResults() {
                     ) : (
                       results.map((result, index) => {
                         // Hitung jumlah benar dan nilai berdasarkan kunci jawaban
-                        const correctAnswers = result.answers.filter(a => {
-                          const q = examDetail?.questions.find(q => q.id === a.questionId);
+                        const correctAnswers = result.answers.filter((a) => {
+                          const q = examDetail?.questions.find(
+                            (q) => q.id === a.questionId
+                          );
                           return q && q.correctAnswer === a.selectedAnswer;
                         }).length;
-                        const totalQuestions = examDetail?.questions.length || 0;
-                        const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
-                        const users = JSON.parse(localStorage.getItem("akademisi-users") || "[]") as User[];
-                        const student = users.find(u => u.id === result.studentId);
-                        
+                        const totalQuestions =
+                          examDetail?.questions.length || 0;
+                        const score =
+                          totalQuestions > 0
+                            ? Math.round(
+                                (correctAnswers / totalQuestions) * 100
+                              )
+                            : 0;
+                        const users = JSON.parse(
+                          localStorage.getItem("akademisi-users") || "[]"
+                        ) as User[];
+                        console.log(result.studentId);
+
                         return (
                           <div
                             key={result.id}
@@ -192,17 +223,19 @@ export default function ExamResults() {
                           >
                             <div className="col-span-1">{index + 1}</div>
                             <div className="col-span-6 md:col-span-4">
-                              {student?.name || "Siswa"}
+                              {result.studentId.name || "Siswa"}
                             </div>
                             <div className="col-span-5 md:col-span-3 text-center">
                               {correctAnswers} / {totalQuestions}
                             </div>
                             <div className="col-span-12 md:col-span-2 text-center">
-                              <Badge 
+                              <Badge
                                 className={`$${
-                                  score >= 80 ? 'bg-green-500' : 
-                                  score >= 60 ? 'bg-yellow-500' : 
-                                  'bg-red-500'
+                                  score >= 80
+                                    ? "bg-green-500"
+                                    : score >= 60
+                                    ? "bg-yellow-500"
+                                    : "bg-red-500"
                                 }`}
                               >
                                 {score}

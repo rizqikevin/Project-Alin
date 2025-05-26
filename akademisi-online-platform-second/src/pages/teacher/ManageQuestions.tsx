@@ -15,6 +15,7 @@ export default function ManageQuestions() {
   const { user } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
   const fetchQuestions = useCallback(async () => {
     if (user) {
@@ -57,7 +58,11 @@ export default function ManageQuestions() {
           <div className="lg:col-span-1">
             <QuestionForm
               teacherId={user?.id || ""}
-              onSuccess={fetchQuestions}
+              onSuccess={() => {
+                fetchQuestions();
+                setEditingQuestion(null); // reset setelah sukses
+              }}
+              editingQuestion={editingQuestion}
             />
           </div>
 
@@ -83,16 +88,29 @@ export default function ManageQuestions() {
                       key={question.id}
                       className="p-4 hover:shadow-md transition-all"
                     >
-                      <div className="flex justify-between">
-                        <h3 className="font-medium">{question.question}</h3>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDeleteQuestion(question.id)}
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-medium max-w-md">
+                          {question.question}
+                        </h3>
+
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingQuestion(question)}
+                          >
+                            Edit
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDeleteQuestion(question.id)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
 
                       <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
