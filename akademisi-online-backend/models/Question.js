@@ -27,6 +27,11 @@ const questionSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  imageUrl: {
+  type: String,
+  required: false,
+  trim: true
+  },
   teacherId: {
     type: mongoose.Schema.Types.Mixed, // Allow both String and ObjectId
     required: true,

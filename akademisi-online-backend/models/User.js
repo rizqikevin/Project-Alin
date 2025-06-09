@@ -15,6 +15,13 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address']
   },
+   kelas: {
+    type: String,
+    required: function () {
+      return this.role === 'STUDENT'; // hanya wajib jika role-nya siswa
+    },
+    trim: true,
+  },
   password: {
     type: String,
     required: [true, 'Password is required'],
@@ -22,7 +29,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['TEACHER', 'STUDENT'],
+    enum: ['TEACHER', 'STUDENT', 'ADMIN'],
     required: [true, 'Role is required']
   },
   createdAt: {

@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Question } from "@/types";
 
 export default function TakeExam() {
   const { examId } = useParams<{ examId: string }>();
@@ -25,6 +26,7 @@ export default function TakeExam() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<string | null>(null);
   const [hasAlreadyTaken, setHasAlreadyTaken] = useState(false);
+  const [questions, setQuestions] = useState<Question[]>([]);
 
   const handleSubmit = useCallback(async () => {
     if (!exam || !user) return;
@@ -207,11 +209,15 @@ export default function TakeExam() {
 
           <div className="space-y-8">
             {exam.questions.map((question) => (
-              <div
-                key={question.id}
-                className="border-b pb-6 last:border-b-0 z-9999"
-              >
+              <div key={question.id} className="border-b pb-6 last:border-b-0">
                 <h3 className="font-medium mb-4">{question.question}</h3>
+                {question.imageUrl && (
+                  <img
+                    src={`http://localhost:5000${question.imageUrl}`}
+                    alt="Soal Gambar"
+                    className="mt-2 rounded-md max-h-48 object-contain mb-4"
+                  />
+                )}
 
                 <div className="space-y-2 ml-6">
                   {question.options.map((option, index) => {

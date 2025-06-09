@@ -206,6 +206,7 @@ export default function ExamForm({ onExamAdded }: { onExamAdded: () => void }) {
                       className="mt-2 rounded-md max-h-48 object-contain"
                     />
                   )}
+                  <h1>{question.imageUrl}</h1>
                 </div>
               ))}
             </div>

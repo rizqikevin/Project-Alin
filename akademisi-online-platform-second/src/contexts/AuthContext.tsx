@@ -23,16 +23,14 @@ interface AuthContextType {
     name: string,
     email: string,
     password: string,
-    role: UserRole
+    role: UserRole,
+    kelas?: string
   ) => Promise<boolean>;
   logout: () => void;
 }
 
-interface StoredUser extends User {
-  password: string;
-}
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -74,10 +72,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     name: string,
     email: string,
     password: string,
-    role: UserRole
+    role: UserRole,
+    kelas?: string
   ): Promise<boolean> => {
     try {
-      const success = await authRegister(name, email, password, role);
+      const success = await authRegister(name, email, password, role, kelas);
       if (success) {
         const currentUser = getCurrentUser();
         if (currentUser) {

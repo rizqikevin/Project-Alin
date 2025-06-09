@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { UserRole } from "@/types";
@@ -10,6 +10,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 export default function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [kelas, setKelas] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole>(UserRole.STUDENT);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,20 +22,18 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      const success = await register(name, email, password, role);
+      // Log data yang dikirim
+      console.log({ name, email, password, role, kelas });
+
+      // Kirim data lengkap, termasuk kelas hanya jika student
+      const success = await register(name, email, password, role, kelas);
 
       if (success) {
-        if (role === UserRole.TEACHER) {
-          toast.success("Pendaftaran guru berhasil");
-          navigate("/login");
-        } else if (role === UserRole.STUDENT) {
-          toast.success("Pendaftaran siswa berhasil");
-          navigate("/login");
-        } else if (role === UserRole.ADMIN) {
-          toast.success("Pendaftaran admin berhasil");
-          navigate("/login");
-        }
+        toast.success(`Pendaftaran ${role.toLowerCase()} berhasil`);
       }
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error("Gagal mendaftar. Periksa kembali data Anda.");
     } finally {
       setIsLoading(false);
     }
@@ -84,6 +83,23 @@ export default function Register() {
               />
             </div>
 
+            {role === UserRole.STUDENT && (
+              <div>
+                <label htmlFor="kelas" className="form-label">
+                  Kelas
+                </label>
+                <input
+                  id="kelas"
+                  type="text"
+                  value={kelas}
+                  onChange={(e) => setKelas(e.target.value)}
+                  className="form-input"
+                  placeholder="Contoh: XII IPA 1"
+                  required
+                />
+              </div>
+            )}
+
             <div>
               <label htmlFor="password" className="form-label">
                 Password
@@ -102,42 +118,26 @@ export default function Register() {
             <div>
               <label className="form-label">Peran</label>
               <div className="flex space-x-4 mt-1">
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="role-student"
-                    name="role"
-                    value={UserRole.STUDENT}
-                    checked={role === UserRole.STUDENT}
-                    onChange={() => setRole(UserRole.STUDENT)}
-                    className="mr-2"
-                  />
-                  <label htmlFor="role-student">Siswa</label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="role-teacher"
-                    name="role"
-                    value={UserRole.TEACHER}
-                    checked={role === UserRole.TEACHER}
-                    onChange={() => setRole(UserRole.TEACHER)}
-                    className="mr-2"
-                  />
-                  <label htmlFor="role-teacher">Guru</label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="role-admin"
-                    name="role"
-                    value={UserRole.ADMIN}
-                    checked={role === UserRole.ADMIN}
-                    onChange={() => setRole(UserRole.ADMIN)}
-                    className="mr-2"
-                  />
-                  <label htmlFor="role-admin">Admin</label>
-                </div>
+                {Object.values(UserRole).map((r) => (
+                  <div key={r} className="flex items-center">
+                    <input
+                      type="radio"
+                      id={`role-${r}`}
+                      name="role"
+                      value={r}
+                      checked={role === r}
+                      onChange={() => setRole(r)}
+                      className="mr-2"
+                    />
+                    <label htmlFor={`role-${r}`}>
+                      {r === "STUDENT"
+                        ? "Siswa"
+                        : r === "TEACHER"
+                        ? "Guru"
+                        : "Admin"}
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
 

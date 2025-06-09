@@ -3,6 +3,8 @@ const router = express.Router();
 const Question = require('../models/Question');
 const mongoose = require('mongoose');
 const { auth } = require('../middleware/auth');
+const multer = require('multer');
+const path = require('path');
 
 // Debug middleware
 router.use((req, res, next) => {
@@ -61,7 +63,7 @@ router.get('/:id', auth, async (req, res) => {
 // Create a new question
 router.post('/', auth, async (req, res) => {
   try {
-    const { question, options, correctAnswer, explanation, teacherId } = req.body;
+    const { question, options, correctAnswer, explanation,imageUrl, teacherId } = req.body;
 
     // Validate required fields
     if (!question || !options || correctAnswer === undefined || !explanation || !teacherId) {
@@ -83,6 +85,7 @@ router.post('/', auth, async (req, res) => {
       options: options.map(opt => opt.trim()),
       correctAnswer,
       explanation: explanation.trim(),
+       imageUrl: imageUrl?.trim() || null,
       teacherId
     });
 
@@ -97,7 +100,7 @@ router.post('/', auth, async (req, res) => {
 // Update a question
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { question, options, correctAnswer, explanation } = req.body;
+    const { question, options, correctAnswer, explanation, imageUrl } = req.body;
 
     // Validate required fields
     if (!question || !options || correctAnswer === undefined || !explanation) {
@@ -120,7 +123,8 @@ router.put('/:id', auth, async (req, res) => {
         question: question.trim(),
         options: options.map(opt => opt.trim()),
         correctAnswer,
-        explanation: explanation.trim()
+        explanation: explanation.trim(),
+         imageUrl: imageUrl?.trim() || null,
       },
       { new: true }
     );
@@ -151,5 +155,39 @@ router.delete('/:id', auth, async (req, res) => {
     res.status(500).json({ message: 'Error deleting question' });
   }
 });
+
+// Storage config
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/questions/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  fileFilter: function (_req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
+
+router.post('/upload-image', auth, upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No image uploaded' });
+  }
+
+  const imageUrl = `/uploads/questions/${req.file.filename}`;
+  res.status(200).json({ imageUrl });
+});
+
 
 module.exports = router; 

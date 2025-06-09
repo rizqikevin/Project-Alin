@@ -44,7 +44,7 @@ router.get('/student/:studentId', auth, async (req, res, next) => {
         select: 'title description startTime durationMinutes',
         populate: {
           path: 'teacherId',
-          select: 'name email'
+          select: 'name email kelas'
         }
       });
 

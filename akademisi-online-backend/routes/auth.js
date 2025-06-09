@@ -47,6 +47,7 @@ router.post('/login', async (req, res, next) => {
     console.log('Found user:', { 
       id: user._id, 
       email: user.email, 
+      kelas: user.kelas,
       role: user.role 
     });
 
@@ -72,6 +73,7 @@ router.post('/login', async (req, res, next) => {
         id: user._id.toString(),
         name: user.name,
         email: user.email,
+        kelas: user.kelas,
         role: user.role
       },
       token
@@ -93,10 +95,11 @@ router.post('/login', async (req, res, next) => {
 // Register
 router.post('/register', async (req, res, next) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email,kelas, password, role } = req.body;
     console.log('Registration attempt:', { 
       name,
       email,
+      kelas,
       role,
       hasPassword: !!password,
       bodyKeys: Object.keys(req.body)
@@ -107,6 +110,7 @@ router.post('/register', async (req, res, next) => {
       console.log('Missing required fields:', { 
         hasName: !!name,
         hasEmail: !!email,
+        hasKelas: !!kelas,
         hasPassword: !!password,
         hasRole: !!role
       });
@@ -129,6 +133,7 @@ router.post('/register', async (req, res, next) => {
     const user = new User({
       name: name.trim(),
       email: trimmedEmail,
+      kelas: kelas.trim(),
       password,
       role
     });
@@ -148,6 +153,7 @@ router.post('/register', async (req, res, next) => {
         id: user._id.toString(),
         name: user.name,
         email: user.email,
+        kelas: user.kelas,
         role: user.role
       },
       token

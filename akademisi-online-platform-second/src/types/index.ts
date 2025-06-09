@@ -6,6 +6,7 @@ export enum UserRole {
 }
 
 export interface User {
+  kelas?: string;
   id: string;
   name: string;
   email: string;
@@ -13,7 +14,7 @@ export interface User {
 }
 
 export interface Question {
-  imageUrl: string | null;
+  imageUrl?: string;
   id: string;
   question: string;
   options: string[];
@@ -88,7 +89,7 @@ export interface RawExamResult {
 export interface ExamResult {
   id: string;
   examId: string;
-  studentId: { id: string; name: string; email: string };
+  studentId: { id: string; name: string; email: string } | string;
   answers: {
     questionId: string;
     selectedAnswer: number;

@@ -130,6 +130,22 @@ export default function ExamResults() {
     );
   }
 
+  const topStudent = results
+    .map((result) => {
+      const correct = result.answers.filter((a) => {
+        const q = examDetail?.questions.find((q) => q.id === a.questionId);
+        return q && q.correctAnswer === a.selectedAnswer;
+      }).length;
+      const total = examDetail?.questions.length || 0;
+      const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+      return {
+        name: (result.studentId as User).name,
+        kelas: (result.studentId as User).kelas || "-",
+        score,
+      };
+    })
+    .sort((a, b) => b.score - a.score)[0];
+
   return (
     <DashboardLayout requiredRole={UserRole.TEACHER}>
       <div className="space-y-6">
@@ -223,7 +239,12 @@ export default function ExamResults() {
                           >
                             <div className="col-span-1">{index + 1}</div>
                             <div className="col-span-6 md:col-span-4">
-                              {result.studentId.name || "Siswa"}
+                              <div className="font-medium">
+                                {(result.studentId as User).name || "Siswa"}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {(result.studentId as User).kelas || "-"}
+                              </div>
                             </div>
                             <div className="col-span-5 md:col-span-3 text-center">
                               {correctAnswers} / {totalQuestions}
@@ -250,6 +271,67 @@ export default function ExamResults() {
                     )}
                   </div>
                 </Card>
+                {/* Rangkuman Nilai */}
+
+                <div className="mt-6 text-sm text-muted-foreground text-right">
+                  <div className="mt-2 text-left">
+                    {topStudent && (
+                      <p>
+                        Siswa Tertinggi:{" "}
+                        <span className="font-medium text-black p-2">
+                          {topStudent.name} ({topStudent.kelas}) -{" "}
+                          {topStudent.score}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                  <p>
+                    Rata-rata Nilai:{" "}
+                    <span className="font-medium text-black">
+                      {results.length > 0
+                        ? Math.round(
+                            results.reduce((acc, result) => {
+                              const correct = result.answers.filter((a) => {
+                                const q = examDetail?.questions.find(
+                                  (q) => q.id === a.questionId
+                                );
+                                return (
+                                  q && q.correctAnswer === a.selectedAnswer
+                                );
+                              }).length;
+                              const total = examDetail?.questions.length || 0;
+                              const score =
+                                total > 0 ? (correct / total) * 100 : 0;
+                              return acc + score;
+                            }, 0) / results.length
+                          )
+                        : 0}
+                    </span>
+                  </p>
+                  <p>
+                    Nilai Tertinggi:{" "}
+                    <span className="font-medium text-black">
+                      {results.length > 0
+                        ? Math.max(
+                            ...results.map((result) => {
+                              const correct = result.answers.filter((a) => {
+                                const q = examDetail?.questions.find(
+                                  (q) => q.id === a.questionId
+                                );
+                                return (
+                                  q && q.correctAnswer === a.selectedAnswer
+                                );
+                              }).length;
+                              const total = examDetail?.questions.length || 0;
+                              return total > 0
+                                ? Math.round((correct / total) * 100)
+                                : 0;
+                            })
+                          )
+                        : 0}
+                    </span>
+                  </p>
+                </div>
               </TabsContent>
             ))}
           </Tabs>

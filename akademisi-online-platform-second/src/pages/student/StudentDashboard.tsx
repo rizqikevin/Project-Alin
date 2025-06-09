@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card } from "@/components/ui/card";
@@ -26,7 +25,7 @@ export default function StudentDashboard() {
         try {
           const active = await getActiveExams();
           const results = await getStudentResults(user.id);
-          
+
           setStats({
             activeExams: active.length,
             completedExams: results.length,
@@ -38,7 +37,7 @@ export default function StudentDashboard() {
         }
       }
     };
-    
+
     fetchData();
   }, [user]);
 
@@ -58,9 +57,11 @@ export default function StudentDashboard() {
             {isLoading ? (
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent my-2"></div>
             ) : (
-              <p className="text-3xl font-bold text-akademisi-purple">{stats.activeExams}</p>
+              <p className="text-3xl font-bold text-akademisi-purple">
+                {stats.activeExams}
+              </p>
             )}
-            <Button 
+            <Button
               variant="outline"
               className="mt-4 w-full"
               onClick={() => navigate("/dashboard/siswa/ujian-aktif")}
@@ -68,7 +69,7 @@ export default function StudentDashboard() {
               Lihat Ujian
             </Button>
           </Card>
-          
+
           <Card className="p-6 flex flex-col items-center justify-center text-center hover:shadow-md transition-all">
             <div className="p-4 bg-akademisi-light-purple/30 rounded-full mb-2">
               <CheckSquare className="h-6 w-6 text-akademisi-purple" />
@@ -77,9 +78,11 @@ export default function StudentDashboard() {
             {isLoading ? (
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent my-2"></div>
             ) : (
-              <p className="text-3xl font-bold text-akademisi-purple">{stats.completedExams}</p>
+              <p className="text-3xl font-bold text-akademisi-purple">
+                {stats.completedExams}
+              </p>
             )}
-            <Button 
+            <Button
               variant="outline"
               className="mt-4 w-full"
               onClick={() => navigate("/dashboard/siswa/hasil-ujian")}
@@ -87,36 +90,46 @@ export default function StudentDashboard() {
               Lihat Hasil
             </Button>
           </Card>
-          
+
           <Card className="p-6 flex flex-col items-center justify-center text-center hover:shadow-md transition-all">
             <div className="p-4 bg-akademisi-light-purple/30 rounded-full mb-2">
               <ClipboardList className="h-6 w-6 text-akademisi-purple" />
             </div>
             <h3 className="text-lg font-medium">Profil</h3>
-            <p className="text-xl font-bold text-akademisi-purple mt-2">{user?.name}</p>
+            <p className="text-xl font-bold text-akademisi-purple mt-2">
+              {user?.name}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">{user?.kelas}</p>
             <p className="text-sm text-muted-foreground mt-1">{user?.email}</p>
           </Card>
         </div>
 
         <div className="grid gap-6 mt-6">
           <Card className="p-6">
-            <h2 className="text-xl font-bold mb-4">Selamat Datang, {user?.name}!</h2>
+            <h2 className="text-xl font-bold mb-4">
+              Selamat Datang, {user?.name}!
+            </h2>
             <p className="text-muted-foreground">
-              Dari dashboard ini, Anda dapat melihat ujian yang aktif, mengikuti ujian, dan melihat hasil ujian Anda.
+              Dari dashboard ini, Anda dapat melihat ujian yang aktif, mengikuti
+              ujian, dan melihat hasil ujian Anda.
             </p>
             <div className="grid gap-3 mt-6">
               <div className="flex items-start gap-2">
                 <ListChecks className="h-5 w-5 text-akademisi-purple mt-0.5" />
                 <div>
                   <h3 className="font-medium">Ujian Aktif</h3>
-                  <p className="text-sm text-muted-foreground">Lihat dan ikuti ujian yang sedang berlangsung</p>
+                  <p className="text-sm text-muted-foreground">
+                    Lihat dan ikuti ujian yang sedang berlangsung
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <CheckSquare className="h-5 w-5 text-akademisi-purple mt-0.5" />
                 <div>
                   <h3 className="font-medium">Hasil Ujian</h3>
-                  <p className="text-sm text-muted-foreground">Lihat hasil dan nilai ujian yang telah Anda selesaikan</p>
+                  <p className="text-sm text-muted-foreground">
+                    Lihat hasil dan nilai ujian yang telah Anda selesaikan
+                  </p>
                 </div>
               </div>
             </div>

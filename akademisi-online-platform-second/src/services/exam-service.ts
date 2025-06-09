@@ -15,6 +15,7 @@ interface RawQuestion {
   optionD?: string;
   correctAnswer?: string;
   explanation?: string;
+  imageUrl?: string;
   teacherId?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -172,6 +173,7 @@ const transformExam = (rawExam: RawExam): Exam => {
           id: q._id || q.id || "",
           question: q.question || "",
           options,
+          imageUrl: q.imageUrl || "",
           correctAnswer,
         };
       })

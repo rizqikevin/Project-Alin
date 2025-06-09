@@ -34,6 +34,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/results', resultRoutes);
+app.use('/uploads/questions', express.static('uploads/questions'));
 
 // Root route
 app.get('/api', (req, res) => {
