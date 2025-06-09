@@ -2,6 +2,7 @@
 export enum UserRole {
   STUDENT = "STUDENT",
   TEACHER = "TEACHER",
+  ADMIN = "ADMIN",
 }
 
 export interface User {
@@ -12,6 +13,7 @@ export interface User {
 }
 
 export interface Question {
+  imageUrl: string | null;
   id: string;
   question: string;
   options: string[];
@@ -51,6 +53,7 @@ export interface RawExam {
 export interface ExamQuestion {
   id: string;
   question: string;
+  imageUrl?: string | null;
   options: string[];
   correctAnswer: number;
 }

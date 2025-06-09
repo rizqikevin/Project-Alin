@@ -88,12 +88,21 @@ export default function ManageQuestions() {
                       key={question.id}
                       className="p-4 hover:shadow-md transition-all"
                     >
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-medium max-w-md">
-                          {question.question}
-                        </h3>
+                      <div className="flex flex-col md:flex-row justify-between gap-4">
+                        {/* Kiri: Soal dan Gambar */}
+                        <div className="flex flex-col gap-2 max-w-md">
+                          <h3 className="font-medium">{question.question}</h3>
+                          {question.imageUrl && (
+                            <img
+                              src={`http://localhost:5000${question.imageUrl}`}
+                              alt="Gambar Soal"
+                              className="w-40 rounded border"
+                            />
+                          )}
+                        </div>
 
-                        <div className="flex items-center space-x-2">
+                        {/* Kanan: Tombol Aksi */}
+                        <div className="flex items-start space-x-2 justify-end">
                           <Button
                             variant="outline"
                             size="sm"
@@ -101,7 +110,6 @@ export default function ManageQuestions() {
                           >
                             Edit
                           </Button>
-
                           <Button
                             variant="ghost"
                             size="icon"
@@ -113,9 +121,10 @@ export default function ManageQuestions() {
                         </div>
                       </div>
 
-                      <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                      {/* Opsi Jawaban */}
+                      <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
                         {question.options?.map((option, index) => {
-                          const letter = String.fromCharCode(65 + index); // A, B, C, D
+                          const letter = String.fromCharCode(65 + index);
                           const isCorrect = question.correctAnswer === index;
 
                           return (

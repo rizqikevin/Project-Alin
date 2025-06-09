@@ -1,4 +1,3 @@
-
 import React, { ReactNode } from "react";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -12,7 +11,10 @@ interface DashboardLayoutProps {
   requiredRole?: UserRole;
 }
 
-export default function DashboardLayout({ children, requiredRole }: DashboardLayoutProps) {
+export default function DashboardLayout({
+  children,
+  requiredRole,
+}: DashboardLayoutProps) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -31,7 +33,17 @@ export default function DashboardLayout({ children, requiredRole }: DashboardLay
   }
 
   if (requiredRole && user.role !== requiredRole) {
-    return <Navigate to={user.role === UserRole.TEACHER ? "/dashboard/guru" : "/dashboard/siswa"} />;
+    return (
+      <Navigate
+        to={
+          user.role === UserRole.ADMIN
+            ? "/dashboard/admin"
+            : user.role === UserRole.TEACHER
+            ? "/dashboard/guru"
+            : "/dashboard/siswa"
+        }
+      />
+    );
   }
 
   return (
@@ -41,7 +53,7 @@ export default function DashboardLayout({ children, requiredRole }: DashboardLay
         <div className="hidden md:block">
           <AppSidebar />
         </div>
-        
+
         <div className="flex-1 overflow-auto">
           <div className="container mx-auto py-6">
             <div className="flex items-center justify-between mb-6">
@@ -51,7 +63,11 @@ export default function DashboardLayout({ children, requiredRole }: DashboardLay
                   <SidebarTrigger className="h-8 w-8" />
                 </div>
                 <h1 className="text-2xl font-bold">
-                  {user.role === UserRole.TEACHER ? 'Dashboard Guru' : 'Dashboard Siswa'}
+                  {user.role === UserRole.ADMIN
+                    ? "Dashboard Admin"
+                    : user.role === UserRole.TEACHER
+                    ? "Dashboard Guru"
+                    : "Dashboard Siswa"}
                 </h1>
               </div>
               {/* Mobile drawer trigger - visible only on mobile */}

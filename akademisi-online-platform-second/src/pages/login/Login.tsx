@@ -22,32 +22,32 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-  
+
     try {
       // Validate input
       if (!email || !password) {
         toast.error("Email dan password harus diisi");
         return;
       }
-  
+
       console.log("Submitting login form:", {
         email: email.trim(),
         hasPassword: !!password,
       });
-  
+
       const response = await login({
         email: email.trim(),
         password,
       });
-  
+
       console.log("User role:", response.user.role);
       console.log("Enum TEACHER:", UserRole.TEACHER);
       const role = response.user.role;
-  
+
       if (response.user) {
         toast.success("Login berhasil");
         console.log("User after login:", response.user);
-  
+
         // Set timeout before navigating
         setTimeout(() => {
           if (role === UserRole.TEACHER) {
@@ -56,6 +56,10 @@ export default function Login() {
             console.log("Navigating based on role:", role);
           } else if (role === UserRole.STUDENT) {
             navigate("/dashboard/siswa", { replace: true });
+            console.log("Navigating based on role:", role);
+            window.location.reload();
+          } else if (role === UserRole.ADMIN) {
+            navigate("/dashboard/admin", { replace: true });
             console.log("Navigating based on role:", role);
             window.location.reload();
           } else {
@@ -80,7 +84,7 @@ export default function Login() {
     } finally {
       setIsLoading(false); // Ensure loading state is reset after error or success
     }
-  };  
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-akademisi-light-purple/30 to-white p-4">
@@ -130,36 +134,10 @@ export default function Login() {
           </Button>
         </form>
 
-        <div className="mt-6 text-center text-sm">
-          <p className="text-gray-600">
-            Belum memiliki akun?{" "}
-            <Link
-              to="/register"
-              className="font-medium text-akademisi-purple hover:underline"
-            >
-              Daftar sekarang
-            </Link>
-          </p>
-        </div>
-
         <div className="mt-6 pt-6 border-t border-gray-200">
-          <p className="text-center text-xs text-gray-500">Demo Akun:</p>
-          <div className="mt-2 grid grid-cols-2 gap-4 text-xs">
-            <div className="rounded-md bg-gray-50 p-2">
-              <p>
-                <strong>Guru:</strong>
-              </p>
-              <p>Email: guru@example.com</p>
-              <p>Password: password123</p>
-            </div>
-            <div className="rounded-md bg-gray-50 p-2">
-              <p>
-                <strong>Siswa:</strong>
-              </p>
-              <p>Email: siswa@example.com</p>
-              <p>Password: password123</p>
-            </div>
-          </div>
+          <p className="text-center text-xs text-gray-500">
+            Silahkan hubungkan admin untuk mendapatkan akun
+          </p>
         </div>
       </Card>
     </div>

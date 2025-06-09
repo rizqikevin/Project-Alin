@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
@@ -14,7 +13,15 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { LogOut, User, PlusCircle, ListChecks, CheckSquare, Book } from "lucide-react";
+import {
+  LogOut,
+  User,
+  PlusCircle,
+  ListChecks,
+  CheckSquare,
+  Book,
+  Settings,
+} from "lucide-react";
 
 export function MobileDrawer() {
   const { user, logout } = useAuth();
@@ -26,6 +33,8 @@ export function MobileDrawer() {
   }
 
   const isTeacher = user.role === UserRole.TEACHER;
+  const isStudent = user.role === UserRole.STUDENT;
+  const isAdmin = user.role === UserRole.ADMIN;
   const menuItems = isTeacher
     ? [
         {
@@ -49,7 +58,8 @@ export function MobileDrawer() {
           path: "/dashboard/guru/hasil-ujian",
         },
       ]
-    : [
+    : isStudent // Assuming you also have an `isStudent` variable
+    ? [
         {
           title: "Dashboard",
           icon: Book,
@@ -65,7 +75,16 @@ export function MobileDrawer() {
           icon: CheckSquare,
           path: "/dashboard/siswa/hasil-ujian",
         },
-      ];
+      ]
+    : isAdmin // Assuming you have an `isAdmin` variable
+    ? [
+        {
+          title: "Admin Dashboard",
+          icon: Settings, // Or an appropriate admin icon
+          path: "/register",
+        },
+      ]
+    : []; // Default for users who are not teacher, student, or admin (e.g., not logged in)
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -106,7 +125,13 @@ export function MobileDrawer() {
             <User className="mr-2 h-4 w-4" />
             <div className="text-sm flex flex-col">
               <span className="font-medium">{user.name}</span>
-              <span className="text-xs text-muted-foreground">{user.role === UserRole.TEACHER ? "Guru" : "Siswa"}</span>
+              <span className="text-xs text-muted-foreground">
+                {user.role === UserRole.ADMIN
+                  ? "Admin"
+                  : user.role === UserRole.TEACHER
+                  ? "Guru"
+                  : "Siswa"}
+              </span>
             </div>
             <Button
               variant="ghost"
@@ -121,7 +146,9 @@ export function MobileDrawer() {
             </Button>
           </div>
           <DrawerClose asChild>
-            <Button variant="outline" className="mt-2">Close</Button>
+            <Button variant="outline" className="mt-2">
+              Close
+            </Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

@@ -7,6 +7,7 @@ import {
   PlusCircle,
   ListChecks,
   CheckSquare,
+  Settings,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -31,6 +32,8 @@ export function AppSidebar() {
   }
 
   const isTeacher = user.role === UserRole.TEACHER;
+  const isStudent = user.role === UserRole.STUDENT;
+  const isAdmin = user.role === UserRole.ADMIN;
   const menuItems = isTeacher
     ? [
         {
@@ -54,7 +57,8 @@ export function AppSidebar() {
           path: "/dashboard/guru/hasil-ujian",
         },
       ]
-    : [
+    : isStudent // Assuming you also have an `isStudent` variable
+    ? [
         {
           title: "Dashboard",
           icon: Book,
@@ -70,8 +74,16 @@ export function AppSidebar() {
           icon: CheckSquare,
           path: "/dashboard/siswa/hasil-ujian",
         },
-      ];
-
+      ]
+    : isAdmin // Assuming you have an `isAdmin` variable
+    ? [
+        {
+          title: "Admin Dashboard",
+          icon: Settings, // Or an appropriate admin icon
+          path: "/dashboard/admin",
+        },
+      ]
+    : []; // Default for users who are not teacher, student, or admin (e.g., not logged in)
   return (
     <Sidebar>
       <SidebarHeader className="flex items-center py-4">
@@ -112,7 +124,11 @@ export function AppSidebar() {
           <div className="text-sm flex flex-col">
             <span className="font-medium">{user.name}</span>
             <span className="text-xs text-muted-foreground">
-              {user.role === UserRole.TEACHER ? "Guru" : "Siswa"}
+              {user.role === UserRole.ADMIN
+                ? "Admin"
+                : user.role === UserRole.TEACHER
+                ? "Guru"
+                : "Siswa"}
             </span>
           </div>
           <button

@@ -1,23 +1,37 @@
 import { useState } from "react";
+
 import { useAuth } from "@/contexts/AuthContext";
+
 import { useNavigate, Link } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
+
 import { Card } from "@/components/ui/card";
+
 import { UserRole } from "@/types";
+
 import { toast } from "sonner";
+
 import DashboardLayout from "@/components/DashboardLayout";
 
 export default function Register() {
   const [name, setName] = useState("");
+
   const [email, setEmail] = useState("");
+
   const [password, setPassword] = useState("");
+
   const [role, setRole] = useState<UserRole>(UserRole.STUDENT);
+
   const [isLoading, setIsLoading] = useState(false);
+
   const { register } = useAuth();
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setIsLoading(true);
 
     try {
@@ -26,12 +40,15 @@ export default function Register() {
       if (success) {
         if (role === UserRole.TEACHER) {
           toast.success("Pendaftaran guru berhasil");
+
           navigate("/login");
         } else if (role === UserRole.STUDENT) {
           toast.success("Pendaftaran siswa berhasil");
+
           navigate("/login");
         } else if (role === UserRole.ADMIN) {
           toast.success("Pendaftaran admin berhasil");
+
           navigate("/login");
         }
       }
@@ -48,6 +65,7 @@ export default function Register() {
             <h1 className="text-3xl font-bold text-akademisi-purple">
               Daftar Akun
             </h1>
+
             <p className="mt-2 text-gray-600">
               Buat akun baru di Akademisi Online
             </p>
@@ -58,6 +76,7 @@ export default function Register() {
               <label htmlFor="name" className="form-label">
                 Nama Lengkap
               </label>
+
               <input
                 id="name"
                 type="text"
@@ -73,6 +92,7 @@ export default function Register() {
               <label htmlFor="email" className="form-label">
                 Email
               </label>
+
               <input
                 id="email"
                 type="email"
@@ -88,6 +108,7 @@ export default function Register() {
               <label htmlFor="password" className="form-label">
                 Password
               </label>
+
               <input
                 id="password"
                 type="password"
@@ -101,6 +122,7 @@ export default function Register() {
 
             <div>
               <label className="form-label">Peran</label>
+
               <div className="flex space-x-4 mt-1">
                 <div className="flex items-center">
                   <input
@@ -112,8 +134,10 @@ export default function Register() {
                     onChange={() => setRole(UserRole.STUDENT)}
                     className="mr-2"
                   />
+
                   <label htmlFor="role-student">Siswa</label>
                 </div>
+
                 <div className="flex items-center">
                   <input
                     type="radio"
@@ -124,8 +148,10 @@ export default function Register() {
                     onChange={() => setRole(UserRole.TEACHER)}
                     className="mr-2"
                   />
+
                   <label htmlFor="role-teacher">Guru</label>
                 </div>
+
                 <div className="flex items-center">
                   <input
                     type="radio"
@@ -136,6 +162,7 @@ export default function Register() {
                     onChange={() => setRole(UserRole.ADMIN)}
                     className="mr-2"
                   />
+
                   <label htmlFor="role-admin">Admin</label>
                 </div>
               </div>

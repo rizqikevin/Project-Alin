@@ -49,7 +49,7 @@ export default function ExamForm({ onExamAdded }: { onExamAdded: () => void }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) {
       toast.error("Anda harus login terlebih dahulu");
       return;
@@ -76,7 +76,7 @@ export default function ExamForm({ onExamAdded }: { onExamAdded: () => void }) {
     }
 
     setIsSubmitting(true);
-    
+
     try {
       const exam = await createExam(
         title,
@@ -86,7 +86,7 @@ export default function ExamForm({ onExamAdded }: { onExamAdded: () => void }) {
         selectedQuestionIds,
         user.id
       );
-      
+
       if (exam) {
         // Reset form
         setTitle("");
@@ -94,7 +94,7 @@ export default function ExamForm({ onExamAdded }: { onExamAdded: () => void }) {
         setStartTime("");
         setDurationMinutes(60);
         setSelectedQuestionIds([]);
-        
+
         onExamAdded();
         toast.success("Ujian berhasil dibuat");
       }
@@ -130,7 +130,10 @@ export default function ExamForm({ onExamAdded }: { onExamAdded: () => void }) {
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium mb-1">
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium mb-1"
+          >
             Deskripsi Ujian
           </label>
           <Textarea
@@ -179,18 +182,30 @@ export default function ExamForm({ onExamAdded }: { onExamAdded: () => void }) {
           ) : (
             <div className="space-y-2">
               {questions.map((question) => (
-                <div key={question.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`question-${question.id}`}
-                    checked={selectedQuestionIds.includes(question.id)}
-                    onCheckedChange={() => handleCheckboxChange(question.id)}
-                  />
-                  <label
-                    htmlFor={`question-${question.id}`}
-                    className="text-sm cursor-pointer"
-                  >
-                    {question.question}
-                  </label>
+                <div
+                  key={question.id}
+                  className="space-y-2 border p-3 rounded-md"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`question-${question.id}`}
+                      checked={selectedQuestionIds.includes(question.id)}
+                      onCheckedChange={() => handleCheckboxChange(question.id)}
+                    />
+                    <label
+                      htmlFor={`question-${question.id}`}
+                      className="text-sm font-medium cursor-pointer"
+                    >
+                      {question.question}
+                    </label>
+                  </div>
+                  {question.imageUrl && (
+                    <img
+                      src={`http://localhost:5000${question.imageUrl}`}
+                      alt="Soal Gambar"
+                      className="mt-2 rounded-md max-h-48 object-contain"
+                    />
+                  )}
                 </div>
               ))}
             </div>

@@ -20,6 +20,7 @@ const questionSchema = z.object({
     .length(4, "Harus ada 4 opsi"),
   correctAnswer: z.number().min(0).max(3, "Pilih jawaban yang benar"),
   explanation: z.string().min(1, "Penjelasan harus diisi"),
+  imageUrl: z.string().optional(),
 });
 
 type QuestionFormData = z.infer<typeof questionSchema>;
@@ -36,6 +37,8 @@ export default function QuestionForm({
   editingQuestion,
 }: QuestionFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const {
     register,
@@ -54,6 +57,39 @@ export default function QuestionForm({
     },
   });
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // ✅ Tampilkan preview langsung
+    const localUrl = URL.createObjectURL(file);
+    setPreviewUrl(localUrl);
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      setUploading(true);
+      const res = await fetch("/api/questions/upload-image", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+      });
+      const data = await res.json();
+      if (data.imageUrl) {
+        setValue("imageUrl", data.imageUrl);
+        toast.success("Gambar berhasil diupload");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Gagal upload gambar");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // Prefill form jika sedang edit
   useEffect(() => {
     if (editingQuestion) {
@@ -61,6 +97,9 @@ export default function QuestionForm({
       setValue("options", editingQuestion.options);
       setValue("correctAnswer", editingQuestion.correctAnswer);
       setValue("explanation", editingQuestion.explanation);
+      if (editingQuestion.imageUrl) {
+        setValue("imageUrl", editingQuestion.imageUrl);
+      }
     }
   }, [editingQuestion, setValue]);
 
@@ -78,6 +117,7 @@ export default function QuestionForm({
             options: string[];
             correctAnswer: number;
             explanation: string;
+            imageUrl?: string;
           }
         );
         toast.success("Soal berhasil diperbarui");
@@ -87,6 +127,7 @@ export default function QuestionForm({
           options: data.options,
           correctAnswer: data.correctAnswer,
           explanation: data.explanation,
+          imageUrl: data.imageUrl,
           teacherId,
         });
         toast.success("Soal berhasil ditambahkan");
@@ -94,6 +135,7 @@ export default function QuestionForm({
 
       onSuccess();
       reset();
+      setPreviewUrl(null);
     } catch (error) {
       console.error("Error submitting question:", error);
       toast.error("Gagal menyimpan soal");
@@ -159,6 +201,19 @@ export default function QuestionForm({
           />
           {errors.explanation && (
             <p className="text-sm text-red-500">{errors.explanation.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="image">Upload Gambar (opsional)</Label>
+          <Input type="file" accept="image/*" onChange={handleImageUpload} />
+          {uploading && <p className="text-sm text-gray-500">Mengupload...</p>}
+          {watch("imageUrl") && (
+            <img
+              src={previewUrl || watch("imageUrl")}
+              alt="Gambar Soal"
+              className="mt-2 rounded w-32 h-auto border"
+            />
           )}
         </div>
 

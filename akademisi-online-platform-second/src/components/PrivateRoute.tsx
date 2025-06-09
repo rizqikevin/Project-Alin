@@ -1,14 +1,17 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { UserRole } from '../types';
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { UserRole } from "../types";
 
 interface PrivateRouteProps {
   children: React.ReactNode;
   requiredRole?: UserRole;
 }
 
-const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, requiredRole }) => {
+const PrivateRoute: React.FC<PrivateRouteProps> = ({
+  children,
+  requiredRole,
+}) => {
   const { user, isLoading } = useAuth();
 
   if (isLoading || !user) {
@@ -25,7 +28,13 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, requiredRole }) =
   if (requiredRole && user.role !== requiredRole) {
     return (
       <Navigate
-        to={user.role === UserRole.TEACHER ? "/dashboard/guru" : "/dashboard/siswa"}
+        to={
+          user.role === UserRole.ADMIN
+            ? "/dashboard/admin"
+            : user.role === UserRole.TEACHER
+            ? "/dashboard/guru"
+            : "/dashboard/siswa"
+        }
         replace
       />
     );

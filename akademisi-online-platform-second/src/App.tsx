@@ -125,6 +125,16 @@ const App = () => {
                 }
               />
 
+              {/* Redirect to the dashboard for authenticated users */}
+              <Route
+                path="/dashboard/admin"
+                element={
+                  <PrivateRoute requiredRole={UserRole.ADMIN}>
+                    <Register />
+                  </PrivateRoute>
+                }
+              />
+
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
             </Routes>

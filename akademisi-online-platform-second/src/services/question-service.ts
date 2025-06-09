@@ -1,4 +1,4 @@
-import api from './api';
+import api from "./api";
 import { Question } from "../types";
 import { toast } from "sonner";
 
@@ -15,23 +15,25 @@ const initializeStorage = () => {
 // Get all questions
 export const getQuestions = async (): Promise<Question[]> => {
   try {
-    const response = await api.get('/questions');
+    const response = await api.get("/questions");
     return response.data;
   } catch (error) {
-    console.error('Error fetching questions:', error);
+    console.error("Error fetching questions:", error);
     throw error;
   }
 };
 
 // Get questions by teacher ID
-export const getQuestionsByTeacher = async (teacherId: string): Promise<Question[]> => {
+export const getQuestionsByTeacher = async (
+  teacherId: string
+): Promise<Question[]> => {
   try {
-    console.log('Fetching questions for teacher:', teacherId);
+    console.log("Fetching questions for teacher:", teacherId);
     const response = await api.get(`/questions?teacherId=${teacherId}`);
-    console.log('Questions response:', response.data);
+    console.log("Questions response:", response.data);
     return response.data;
   } catch (error) {
-    console.error('Error fetching questions:', error);
+    console.error("Error fetching questions:", error);
     throw error;
   }
 };
@@ -42,7 +44,7 @@ export const getQuestion = async (id: string): Promise<Question> => {
     const response = await api.get(`/questions/${id}`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching question:', error);
+    console.error("Error fetching question:", error);
     throw error;
   }
 };
@@ -53,76 +55,98 @@ export const addQuestion = async (questionData: {
   options: string[];
   correctAnswer: number;
   explanation: string;
+  imageUrl?: string;
   teacherId: string;
 }): Promise<Question> => {
   try {
-    console.log('Adding new question:', questionData);
+    console.log("Adding new question:", questionData);
 
     // Validate data before sending
-    if (!questionData.question || !questionData.options || 
-        questionData.correctAnswer === undefined || !questionData.explanation || !questionData.teacherId) {
-      throw new Error('Missing required fields');
+    if (
+      !questionData.question ||
+      !questionData.options ||
+      questionData.correctAnswer === undefined ||
+      !questionData.explanation ||
+      !questionData.teacherId
+    ) {
+      throw new Error("Missing required fields");
     }
 
-    if (!Array.isArray(questionData.options) || questionData.options.length !== 4) {
-      throw new Error('Question must have exactly 4 options');
+    if (
+      !Array.isArray(questionData.options) ||
+      questionData.options.length !== 4
+    ) {
+      throw new Error("Question must have exactly 4 options");
     }
 
     if (questionData.correctAnswer < 0 || questionData.correctAnswer > 3) {
-      throw new Error('Correct answer must be between 0 and 3');
+      throw new Error("Correct answer must be between 0 and 3");
     }
 
-    const response = await api.post('/questions', {
+    const response = await api.post("/questions", {
       question: questionData.question.trim(),
-      options: questionData.options.map(opt => opt.trim()),
+      options: questionData.options.map((opt) => opt.trim()),
       correctAnswer: questionData.correctAnswer,
       explanation: questionData.explanation.trim(),
-      teacherId: questionData.teacherId
+      imageUrl: questionData.imageUrl?.trim() || null,
+      teacherId: questionData.teacherId,
     });
 
-    console.log('Question added successfully:', response.data);
+    console.log("Question added successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error('Error adding question:', error);
+    console.error("Error adding question:", error);
     throw error;
   }
 };
 
 // Update a question
-export const updateQuestion = async (id: string, questionData: {
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
-}): Promise<Question> => {
+export const updateQuestion = async (
+  id: string,
+  questionData: {
+    question: string;
+    options: string[];
+    correctAnswer: number;
+    explanation: string;
+    imageUrl?: string;
+  }
+): Promise<Question> => {
   try {
-    console.log('Updating question:', { id, questionData });
+    console.log("Updating question:", { id, questionData });
 
     // Validate data before sending
-    if (!questionData.question || !questionData.options || 
-        questionData.correctAnswer === undefined || !questionData.explanation) {
-      throw new Error('Missing required fields');
+    if (
+      !questionData.question ||
+      !questionData.options ||
+      questionData.correctAnswer === undefined ||
+      !questionData.explanation
+    ) {
+      throw new Error("Missing required fields");
     }
 
-    if (!Array.isArray(questionData.options) || questionData.options.length !== 4) {
-      throw new Error('Question must have exactly 4 options');
+    if (
+      !Array.isArray(questionData.options) ||
+      questionData.options.length !== 4
+    ) {
+      throw new Error("Question must have exactly 4 options");
     }
 
     if (questionData.correctAnswer < 0 || questionData.correctAnswer > 3) {
-      throw new Error('Correct answer must be between 0 and 3');
+      throw new Error("Correct answer must be between 0 and 3");
     }
-    
+
     const response = await api.put(`/questions/${id}`, {
       question: questionData.question.trim(),
-      options: questionData.options.map(opt => opt.trim()),
+      options: questionData.options.map((opt) => opt.trim()),
       correctAnswer: questionData.correctAnswer,
-      explanation: questionData.explanation.trim()
+      explanation: questionData.explanation.trim(),
+      imageUrl: questionData.imageUrl?.trim() || null, // ✅ sertakan ke body
     });
 
-    console.log('Question updated successfully:', response.data);
+    console.log("Question updated successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error('Error updating question:', error);
+    console.error("Error updating question:", error);
     throw error;
   }
 };
@@ -130,11 +154,11 @@ export const updateQuestion = async (id: string, questionData: {
 // Delete a question
 export const deleteQuestion = async (id: string): Promise<void> => {
   try {
-    console.log('Deleting question:', id);
+    console.log("Deleting question:", id);
     await api.delete(`/questions/${id}`);
-    console.log('Question deleted successfully');
+    console.log("Question deleted successfully");
   } catch (error) {
-    console.error('Error deleting question:', error);
+    console.error("Error deleting question:", error);
     throw error;
   }
 };
