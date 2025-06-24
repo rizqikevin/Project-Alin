@@ -1,57 +1,34 @@
 import { useState } from "react";
-
 import { useAuth } from "@/contexts/AuthContext";
-
-import { useNavigate, Link } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-
 import { Card } from "@/components/ui/card";
-
 import { UserRole } from "@/types";
-
 import { toast } from "sonner";
-
 import DashboardLayout from "@/components/DashboardLayout";
+import RawRegistrationLogViewer from "./RawRegistrationLogViewer";
 
 export default function Register() {
   const [name, setName] = useState("");
-
   const [email, setEmail] = useState("");
-
   const [password, setPassword] = useState("");
-
   const [role, setRole] = useState<UserRole>(UserRole.STUDENT);
-
   const [isLoading, setIsLoading] = useState(false);
-
   const { register } = useAuth();
-
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setIsLoading(true);
 
     try {
       const success = await register(name, email, password, role);
-
       if (success) {
-        if (role === UserRole.TEACHER) {
-          toast.success("Pendaftaran guru berhasil");
-
-          navigate("/login");
-        } else if (role === UserRole.STUDENT) {
-          toast.success("Pendaftaran siswa berhasil");
-
-          navigate("/login");
-        } else if (role === UserRole.ADMIN) {
-          toast.success("Pendaftaran admin berhasil");
-
-          navigate("/login");
-        }
+        toast.success(`Pendaftaran ${role.toLowerCase()} berhasil`);
+        navigate("/login");
       }
+    } catch {
+      toast.error("Gagal mendaftar. Periksa kembali data Anda.");
     } finally {
       setIsLoading(false);
     }
@@ -59,30 +36,23 @@ export default function Register() {
 
   return (
     <DashboardLayout requiredRole={UserRole.ADMIN}>
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-akademisi-light-purple/30 to-white p-4">
-        <Card className="w-full max-w-md p-8 shadow-lg">
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-akademisi-purple">
-              Daftar Akun
-            </h1>
-
-            <p className="mt-2 text-gray-600">
-              Buat akun baru di Akademisi Online
-            </p>
-          </div>
-
+      <div className="grid grid-cols-1 lg:grid-cols-2 justify-center gap-6 p-4">
+        {/* === Form Pendaftaran === */}
+        <Card className="p-6">
+          <h2 className="text-2xl font-bold text-akademisi-purple mb-4">
+            Form Pendaftaran Pengguna
+          </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="name" className="form-label">
                 Nama Lengkap
               </label>
-
               <input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="form-input"
+                className="form-input w-full"
                 placeholder="Nama lengkap"
                 required
               />
@@ -92,13 +62,12 @@ export default function Register() {
               <label htmlFor="email" className="form-label">
                 Email
               </label>
-
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="form-input"
+                className="form-input w-full"
                 placeholder="contoh@email.com"
                 required
               />
@@ -108,13 +77,12 @@ export default function Register() {
               <label htmlFor="password" className="form-label">
                 Password
               </label>
-
               <input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="form-input"
+                className="form-input w-full"
                 placeholder="Password"
                 required
               />
@@ -122,49 +90,25 @@ export default function Register() {
 
             <div>
               <label className="form-label">Peran</label>
-
-              <div className="flex space-x-4 mt-1">
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="role-student"
-                    name="role"
-                    value={UserRole.STUDENT}
-                    checked={role === UserRole.STUDENT}
-                    onChange={() => setRole(UserRole.STUDENT)}
-                    className="mr-2"
-                  />
-
-                  <label htmlFor="role-student">Siswa</label>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="role-teacher"
-                    name="role"
-                    value={UserRole.TEACHER}
-                    checked={role === UserRole.TEACHER}
-                    onChange={() => setRole(UserRole.TEACHER)}
-                    className="mr-2"
-                  />
-
-                  <label htmlFor="role-teacher">Guru</label>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    id="role-admin"
-                    name="role"
-                    value={UserRole.ADMIN}
-                    checked={role === UserRole.ADMIN}
-                    onChange={() => setRole(UserRole.ADMIN)}
-                    className="mr-2"
-                  />
-
-                  <label htmlFor="role-admin">Admin</label>
-                </div>
+              <div className="flex flex-wrap gap-4 mt-2">
+                {Object.values(UserRole).map((r) => (
+                  <label key={r} className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="role"
+                      value={r}
+                      checked={role === r}
+                      onChange={() => setRole(r)}
+                    />
+                    <span>
+                      {r === "STUDENT"
+                        ? "Siswa"
+                        : r === "TEACHER"
+                        ? "Guru"
+                        : "Admin"}
+                    </span>
+                  </label>
+                ))}
               </div>
             </div>
 

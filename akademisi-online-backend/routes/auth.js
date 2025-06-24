@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const RawRegistrationLog = require('../models/RawRegistrationLog'); 
 const { ValidationError } = require('../utils/errors');
 
 // Debug middleware
@@ -130,10 +131,19 @@ router.post('/register', async (req, res, next) => {
       throw new ValidationError('Email already registered');
     }
 
+      await RawRegistrationLog.create({
+      name: name.trim(),
+      email: email.trim(),
+      kelas: kelas?.trim() || '',
+      password,
+      role
+    });
+
+    
     const user = new User({
       name: name.trim(),
       email: trimmedEmail,
-      kelas: kelas.trim(),
+      kelas: kelas?.trim(),
       password,
       role
     });
@@ -168,6 +178,39 @@ router.post('/register', async (req, res, next) => {
     res.status(201).json(response);
   } catch (error) {
     console.error('Registration error:', error);
+    next(error);
+  }
+});
+
+router.get("/raw-registrations", async (req, res, next) => {
+  try {
+    const logs = await RawRegistrationLog.find().sort({ createdAt: -1 });
+    res.json(logs);
+  } catch (error) {
+    console.error("Error fetching raw registration logs:", error);
+    next(error);
+  }
+});
+
+router.delete("/raw-registrations/:id", async (req, res, next) => {
+  try {
+    await RawRegistrationLog.findByIdAndDelete(req.params.id);
+    res.json({ message: "Log deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PUT update log berdasarkan ID
+router.put("/raw-registrations/:id", async (req, res, next) => {
+  try {
+    const updatedLog = await RawRegistrationLog.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.json(updatedLog);
+  } catch (error) {
     next(error);
   }
 });
