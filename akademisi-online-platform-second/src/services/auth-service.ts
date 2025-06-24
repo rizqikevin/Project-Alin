@@ -1,5 +1,6 @@
 import api from "./api";
 import { User, UserRole } from "../types";
+import { RawRegistration } from "../pages/admin/RawRegistrationLogViewer";
 
 const TOKEN_KEY = "auth_token";
 const USER_KEY = "user_data";
@@ -13,6 +14,24 @@ interface LoginCredentials {
   email: string;
   password: string;
 }
+
+export const getRawRegistrationLogs = async () => {
+  const response = await api.get("/auth/raw-registrations");
+  return response.data;
+};
+
+export const deleteRawRegistrationLog = async (id: string) => {
+  const res = await api.delete(`/auth/raw-registrations/${id}`);
+  return res.data;
+};
+
+export const updateRawRegistrationLog = async (
+  id: string,
+  updatedData: Partial<RawRegistration>
+) => {
+  const res = await api.put(`/auth/raw-registrations/${id}`, updatedData);
+  return res.data;
+};
 
 export const login = async (
   credentials: LoginCredentials

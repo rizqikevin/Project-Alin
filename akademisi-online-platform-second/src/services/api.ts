@@ -1,9 +1,9 @@
-import axios, { AxiosError } from 'axios';
-import { toast } from 'sonner';
+import axios, { AxiosError } from "axios";
+import { toast } from "sonner";
 
 // Use relative URL in development to work with Vite proxy
-const API_URL = import.meta.env.DEV ? '/api' : 'http://localhost:5000/api';
-console.log('API URL:', API_URL);
+const API_URL = import.meta.env.DEV ? "/api" : "http://localhost:5000/api";
+console.log("API URL:", API_URL);
 
 // Define error response type
 interface ErrorResponse {
@@ -13,30 +13,30 @@ interface ErrorResponse {
   validationErrors?: Record<string, string[]>;
 }
 
-const TOKEN_KEY = 'akademisi-token';
+const TOKEN_KEY = "akademisi-token";
 
 // Create axios instance
 export const api = axios.create({
   baseURL: API_URL,
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    "Content-Type": "application/json",
+  },
 });
 
 // Add request interceptor for logging and auth
 api.interceptors.request.use(
   (config) => {
     // Log request details
-    console.log('API Request:', {
+    console.log("API Request:", {
       method: config.method,
       url: config.url,
       data: config.data,
-      headers: config.headers
+      headers: config.headers,
     });
 
     // Get token from localStorage
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem("auth_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -44,7 +44,7 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('Request error:', error);
+    console.error("Request error:", error);
     return Promise.reject(error);
   }
 );
@@ -53,15 +53,15 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     // Log response details
-    console.log('API Response:', {
+    console.log("API Response:", {
       status: response.status,
       data: response.data,
-      headers: response.headers
+      headers: response.headers,
     });
     return response;
   },
   (error: AxiosError<ErrorResponse>) => {
-    console.error('Response error:', error);
+    console.error("Response error:", error);
 
     // Handle different error types
     if (error.response) {
@@ -71,34 +71,34 @@ api.interceptors.response.use(
         case 400:
           if (data.validationErrors) {
             // Handle validation errors
-            Object.values(data.validationErrors).forEach(errors => {
-              errors.forEach(error => toast.error(error));
+            Object.values(data.validationErrors).forEach((errors) => {
+              errors.forEach((error) => toast.error(error));
             });
           } else {
-            toast.error(data.message || 'Invalid request');
+            toast.error(data.message || "Invalid request");
           }
           break;
         case 401:
-          toast.error('Please log in to continue');
+          toast.error("Please log in to continue");
           // Redirect to login if needed
           break;
         case 403:
-          toast.error('You do not have permission to perform this action');
+          toast.error("You do not have permission to perform this action");
           break;
         case 404:
-          toast.error('Resource not found');
+          toast.error("Resource not found");
           break;
         case 500:
-          toast.error('Server error. Please try again later.');
+          toast.error("Server error. Please try again later.");
           break;
         default:
-          toast.error('An unexpected error occurred');
+          toast.error("An unexpected error occurred");
       }
     } else if (error.request) {
       // Network error
-      toast.error('Network error. Please check your connection.');
+      toast.error("Network error. Please check your connection.");
     } else {
-      toast.error('An unexpected error occurred');
+      toast.error("An unexpected error occurred");
     }
 
     return Promise.reject(error);
@@ -108,12 +108,12 @@ api.interceptors.response.use(
 // Test API connection
 export const testApiConnection = async () => {
   try {
-    console.log('Testing API connection...');
-    const response = await api.get('/health');
-    console.log('API connection test successful:', response.data);
+    console.log("Testing API connection...");
+    const response = await api.get("/health");
+    console.log("API connection test successful:", response.data);
     return response.data;
   } catch (error) {
-    console.error('API connection test failed:', error);
+    console.error("API connection test failed:", error);
     throw error;
   }
 };
@@ -121,4 +121,4 @@ export const testApiConnection = async () => {
 // Run API connection test
 testApiConnection().catch(console.error);
 
-export default api; 
+export default api;

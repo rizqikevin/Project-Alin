@@ -82,6 +82,11 @@ export function AppSidebar() {
           icon: Settings, // Or an appropriate admin icon
           path: "/dashboard/admin",
         },
+        {
+          title: "Kelola Pengguna",
+          icon: User, // Or an appropriate user management icon
+          path: "/dashboard/admin/kelola-pengguna",
+        },
       ]
     : []; // Default for users who are not teacher, student, or admin (e.g., not logged in)
   return (

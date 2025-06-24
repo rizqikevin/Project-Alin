@@ -11,7 +11,6 @@ import { UserRole } from "./types";
 
 // Auth pages
 import Login from "./pages/login/Login";
-import Register from "./pages/register/Register";
 
 // Teacher pages
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
@@ -24,6 +23,8 @@ import StudentDashboard from "./pages/student/StudentDashboard";
 import ActiveExams from "./pages/student/ActiveExams";
 import TakeExam from "./pages/student/TakeExam";
 import StudentResults from "./pages/student/StudentResults";
+import RawRegistrationLogViewer from "./pages/admin/RawRegistrationLogViewer";
+import Register from "./pages/admin/Register";
 
 // Create a new QueryClient instance outside of the component to avoid recreation on renders
 const queryClient = new QueryClient({
@@ -131,6 +132,16 @@ const App = () => {
                 element={
                   <PrivateRoute requiredRole={UserRole.ADMIN}>
                     <Register />
+                  </PrivateRoute>
+                }
+              />
+
+              {/* Redirect to the dashboard for authenticated users */}
+              <Route
+                path="/dashboard/admin/kelola-pengguna"
+                element={
+                  <PrivateRoute requiredRole={UserRole.ADMIN}>
+                    <RawRegistrationLogViewer />
                   </PrivateRoute>
                 }
               />
